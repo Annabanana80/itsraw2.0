@@ -33,7 +33,22 @@ div.panel-group{
 .container-fluid{
   min-height:800px;
 }
-
+/*img:nth-child(1){
+  display:none;
+}*/
+img{
+  max-height:320px;
+  max-width:260px;
+}
+a{
+  font-size:24px;
+}
+h3{
+  background-color:#f5f5f5;
+}
+#ingCont{
+  padding-right:60px;
+}
 @keyframes App-logo-spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
