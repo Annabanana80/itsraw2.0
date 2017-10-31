@@ -20,13 +20,15 @@ class App extends Component {
 
 state={
   recipes:[
-  
+  {recipeName: 'Rainbow Icecream', ingredients: ['Cream', 'Sugar','Unicorn Magic','Sparkles'], instructions: ['Make ice cream', 'Add some sparkles', 'Ta-da! Ice cream!'], picture: ['http://cake.style/wp-content/uploads/2016/04/Rainbow-Ice-cream-Cookies-2-1024x683.jpg']},
+  {recipeName: 'Piecaken', ingredients: ['Pie','Cake Mix','Frosting'], instructions: ['Cook pie according to instructions','Pour half of cake mix into cake pans', 'Carefully insert pie upside down','Bake', 'Cool then frost'], picture: ['https://i.imgur.com/RgmOkZ3m.jpg']}
+
 
   ],
   showAdd:false,
   showEdit:false,
   currentIndex: 0,
-  newestRecipe: {recipeName:'', ingredients:[]},
+  newestRecipe: {recipeName:'', ingredients:[], instructions:[], picture: ""},
   
   
 }
@@ -39,18 +41,18 @@ deleteRecipe(index){
   }
 
 //Add a newestRecipe
-addNewRecipe(recipeName, ingredients, ){
-  this.setState({newestRecipe:{recipeName: recipeName, ingredients:ingredients}});
+addNewRecipe(recipeName, ingredients,instructions, picture){
+  this.setState({newestRecipe:{recipeName: recipeName, ingredients:ingredients, instructions:instructions, picture:picture}});
 }
 
 
 //Saves new recipe
 saveNewRecipe(){
   let recipes = this.state.recipes.slice();
-  recipes.push({recipeName: this.state.newestRecipe.recipeName, ingredients: this.state.newestRecipe.ingredients});
-  localStorage.setItem('recipes',JSON.stringify(recipes));
+  recipes.push({recipeName: this.state.newestRecipe.recipeName, ingredients: this.state.newestRecipe.ingredients, instructions: this.state.newestRecipe.instructions, picture: this.state.newestRecipe.picture});
+  // localStorage.setItem('recipes',JSON.stringify(recipes));
   this.setState({recipes});
-  this.setState({newestRecipe: {recipeName:"",ingredients:[]}});
+  this.setState({newestRecipe: {recipeName:"",ingredients:[], instructions:[], picture:""}});
   this.close();
 }
 //closes a modal
@@ -76,16 +78,16 @@ updateRecipeName(recipeName, currentIndex){
 updateIngredients(ingredients,currentIndex){
   let recipes = this.state.recipes.slice();
   recipes[currentIndex]={recipeName:recipes[currentIndex].recipeName, ingredients: ingredients};
-  localStorage.setItem('recipes',JSON.stringify(recipes));
+  // localStorage.setItem('recipes',JSON.stringify(recipes));
   this.setState({recipes});
 } 
 
-componentDidMount(){
-  let recipes = JSON.parse(localStorage.getItem("recipes")) || [];
-  localStorage.setItem('recipes',JSON.stringify(recipes));
-  this.setState({recipes});
+// componentDidMount(){
+//   let recipes = JSON.parse(localStorage.getItem("recipes")) || [];
+//   localStorage.setItem('recipes',JSON.stringify(recipes));
+//   this.setState({recipes});
 
-} 
+// } 
 
 
 
@@ -107,12 +109,31 @@ componentDidMount(){
         <Accordion>
           {recipes.map((recipe, index)=>(
             <Panel header={recipe.recipeName}eventKey={index} key= {index}>
-              <h3 id="ingredients">Ingredients</h3>               
+            <Grid>
+              <Row className="show-grid">
+              <Col xs={6} md={6} id="picture">                
+                <Image src={recipe.picture} className="thumbnail"/>              
+              </Col>  
+              <Col xs={6} md={6} id="ingCont">
+              <h3 id="ingredients">Ingredients</h3> 
+                <div>              
                   <ol>
                     {recipe.ingredients.map((item)=>
                       <li key={item}>{item}</li>
                       )}
-                  </ol>               
+                  </ol> 
+                </div>                
+                </Col>
+                </Row>
+              </Grid>
+                <h3 id="instructions">Instructions</h3> 
+              <div> 
+                <ol>
+                {recipe.instructions.map((item)=>
+                  <li key={item}>{item}</li>
+                  )}
+                </ol>
+              </div>                              
                                
               <ButtonToolbar>
                 <Button bsStyle="danger" onClick={(event)=>this.deleteRecipe(currentIndex)}>Shut it down!!(Delete Recipe)</Button>
