@@ -20,62 +20,90 @@ class App extends Component {
 
 state={
   recipes:[
-  {recipeName: 'Rainbow Icecream', ingredients: ['Cream', 'Sugar','Unicorn Magic','Sparkles']},
-  {recipeName: 'Piecaken', ingredients: ['Pie','Cake Mix','Frosting']}
+  
 
   ],
   showAdd:false,
-  newestRecipe: {recipeName:'', ingredients:[]}
-  // showEdit:false,
-  // currentIndex:0;
+  showEdit:false,
+  currentIndex: 0,
+  newestRecipe: {recipeName:'', ingredients:[]},
+  
+  
 }
 //deletes a recipe
-
 deleteRecipe(index){
-  let recipes=this.state.recipes.slice();
-  recipes.splice(index,1);
-  this.setState({recipes});
-}
+    let recipes= this.state.recipes.slice();
+    recipes.splice(index, 1);
+    localStorage.setItem('recipes',JSON.stringify(recipes));
+    this.setState({recipes});
+  }
+
 //Add a newestRecipe
 addNewRecipe(recipeName, ingredients, ){
   this.setState({newestRecipe:{recipeName: recipeName, ingredients:ingredients}});
 }
 
 
-//saves a new recipe to recipes
-saveNewRecipe(newestRecipe){
-  let recipes=this.state.recipes.slice();
-  recipes.push({recipeName:this.state.newestRecipe.recipeName, ingredients: this.state.newestRecipe.ingredients});
+//Saves new recipe
+saveNewRecipe(){
+  let recipes = this.state.recipes.slice();
+  recipes.push({recipeName: this.state.newestRecipe.recipeName, ingredients: this.state.newestRecipe.ingredients});
+  localStorage.setItem('recipes',JSON.stringify(recipes));
   this.setState({recipes});
-  this.setState({newestRecipe: {recipeName:"", ingredients:[]}});
+  this.setState({newestRecipe: {recipeName:"",ingredients:[]}});
   this.close();
 }
 //closes a modal
-close=()=>{
+close =() =>{
   if(this.state.showAdd){
     this.setState({showAdd: false})
+  }if(this.state.showEdit){
+    this.setState({showEdit:false})
   }
 }
 //open a modal
-open=(state)=>{
-  this.setState({[state]: true});
+open = (state, currentIndex)=>{
+  this.setState({[state]:true});
+  this.setState({currentIndex});
 }
+//updates recipe name
+updateRecipeName(recipeName, currentIndex){
+  let recipes = this.state.recipes.slice();
+  recipes[currentIndex]={recipeName:recipeName, ingredients: recipes[currentIndex].ingredients};
+  this.setState({recipes});
+}
+//updates ingredients
+updateIngredients(ingredients,currentIndex){
+  let recipes = this.state.recipes.slice();
+  recipes[currentIndex]={recipeName:recipes[currentIndex].recipeName, ingredients: ingredients};
+  localStorage.setItem('recipes',JSON.stringify(recipes));
+  this.setState({recipes});
+} 
+
+componentDidMount(){
+  let recipes = JSON.parse(localStorage.getItem("recipes")) || [];
+  localStorage.setItem('recipes',JSON.stringify(recipes));
+  this.setState({recipes});
+
+} 
+
+
 
   render() {
-   const{recipes, newestRecipe} = this.state;
-   console.log(newestRecipe);
+   const{recipes, newestRecipe, currentIndex} = this.state;
+   
     return (
       <div className="App">
         <Jumbotron>
           <h1>It's Raw!!</h1>
         <p>A Gordon Ramsey themed recipe saver app.</p>
-        <p><Button bsStyle="danger" onClick={(event)=>this.open("showAdd")}>Add Recipe</Button></p>
+        <p><Button bsStyle="danger" onClick={(event)=>this.open("showAdd", currentIndex)}>Add Recipe</Button></p>
         </Jumbotron>
         <div className="container-fluid" style ={ { backgroundImage: "url('https://i.imgur.com/t51f3J2l.jpg')" } }>
         <div className="container">
         
         {recipes.length>0 &&(
-
+        <div>
         <Accordion>
           {recipes.map((recipe, index)=>(
             <Panel header={recipe.recipeName}eventKey={index} key= {index}>
@@ -87,15 +115,47 @@ open=(state)=>{
                   </ol>               
                                
               <ButtonToolbar>
-                <Button bsStyle="danger" onClick={(event)=>this.deleteRecipe(index)}>Shut it down!!(Delete Recipe)</Button>
-                <Button bsStyle="info">Donkey!!(Edit Recipe)</Button>
+                <Button bsStyle="danger" onClick={(event)=>this.deleteRecipe(currentIndex)}>Shut it down!!(Delete Recipe)</Button>
+                <Button bsStyle="info" onClick={(event)=>this.open("showEdit",index)}>Donkey!!(Edit Recipe)</Button>
               </ButtonToolbar>
             </Panel>
           ))}
 
         </Accordion>
-      )}
+      
+<Modal show={this.state.showEdit} onHide={this.close}>
+  <Modal.Header closeButton>
+    <Modal.Title>Add Recipe</Modal.Title>
+    <Modal.Body>
 
+      <FormGroup controlId="formBasicText">
+        <ControlLabel>Recipe Name</ControlLabel>
+        <FormControl
+          type="text"
+          value={recipes[currentIndex].recipeName}
+          placeholder="Enter Recipe Name"
+          onChange={(event)=>this.updateRecipeName(event.target.value,currentIndex)}
+          ></FormControl>      
+      </FormGroup>
+
+      
+      <FormGroup controlId="formControlsTextarea">
+        <ControlLabel>Ingredients</ControlLabel>
+        <FormControl
+          componentClass="textarea"
+          value={recipes[currentIndex].ingredients}
+          placeholder="Enter measurements then ingredients. Separate by commas."
+          onChange={(event)=>this.updateIngredients(event.target.value.split(","),currentIndex)}
+          ></FormControl>
+      </FormGroup>      
+    </Modal.Body>
+    <ModalFooter>
+      <Button onClick={(event)=>this.saveNewRecipe(newestRecipe)}>Save</Button>
+    </ModalFooter>
+  </Modal.Header>
+</Modal>
+</div>
+)}
 <Modal show={this.state.showAdd} onHide={this.close}>
   <Modal.Header closeButton>
     <Modal.Title>Add Recipe</Modal.Title>
@@ -107,7 +167,7 @@ open=(state)=>{
           type="text"
           value={newestRecipe.recipeName}
           placeholder="Enter Recipe Name"
-          onChange={(event)=>this.addNewRecipe(event.target.value, newestRecipe.ingredients, newestRecipe.instructions, newestRecipe.picture)}
+          onChange={(event)=>this.addNewRecipe(event.target.value, newestRecipe.ingredients)}
           ></FormControl>      
       </FormGroup>
 
@@ -115,7 +175,7 @@ open=(state)=>{
       <FormGroup controlId="formControlsTextarea">
         <ControlLabel>Ingredients</ControlLabel>
         <FormControl
-          componentClass="textarea"
+          type="textarea"
           value={newestRecipe.ingredients}
           placeholder="Enter measurements then ingredients. Separate by commas."
           onChange={(event)=>this.addNewRecipe(newestRecipe.recipeName, event.target.value.split(","))}
